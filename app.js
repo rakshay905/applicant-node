@@ -14,6 +14,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 // Setup a default catch-all route that sends back a welcome message in JSON format.
 require('./server/routes')(app);
+app.use('/api', require('./server/routes/index'))
+
+
 app.get('*', (req, res) => res.status(200).send({
     message: 'Welcome to the user portal.',
 }));

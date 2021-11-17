@@ -1,12 +1,14 @@
 const chai = require('chai')
+const chaiHttp = require('chai-http')
 let expect = chai.expect
+chai.use(chaiHttp)
+const server = require('../app')
+
 let User = require('../server/models').User
 var modelData = {
     guest_count: 3,
-    start_date: "2018-01-11T00:00:00.000Z",
-    end_date: "2018-01-12T00:00:00.000Z",
     first_name: "Ajay",
-    middle_name: "Mahipal12",
+    middle_name: "Mahipal",
     last_name: "Rana",
     email: "rakshay905@gmail.com",
     phone_number: "9671352509",
@@ -84,9 +86,10 @@ describe(`User Model`, function () {
     it(`should update the user entry in the database`, function () {
         User.create(modelData).then(function (user) {
             //after user is created, then update a value
-            modelData.guest_count = 12
-            modelData.first_name = 'test applicant 12'
-            User.update(modelData, {
+            let data = JSON.parse(JSON.stringify(modelData))
+            data.guest_count = 12
+            data.first_name = 'test applicant 12'
+            User.update(data, {
                 where: {
                     id: user.id
                 }
@@ -105,6 +108,40 @@ describe(`User Model`, function () {
                     })
                     done()
                 })
+            })
+        })
+    })
+})
+
+describe(`Use APIs`, function() {
+    before(function() {
+        User.destroy({
+            where: {
+                middle_name: 'Test'
+            }
+        })
+    })
+    describe(`Create APIs`, function() {
+        it(`Should create new user/applicant `, function(done) {
+            delete modelData['guest_count']
+            modelData.middle_name = 'Test'
+            chai.request(server)
+            .post('/api/users')
+            .send(modelData)
+            .end((error, response) => {
+                expect(response.status).to.be.equal(201)
+                done();
+            })
+        })
+    })
+    describe(`Get APIs`, function() {
+        it(`Should fetch user/applicant `, function(done) {
+            chai.request(server)
+            .get('/api/users')
+            .end((error, response) => {
+                console.log(response.body)
+                expect(response.status).to.be.equal(200)
+                done();
             })
         })
     })
