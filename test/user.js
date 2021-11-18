@@ -5,6 +5,7 @@ chai.use(chaiHttp)
 const server = require('../app')
 
 let User = require('../server/models').User
+let testUserID;
 var modelData = {
     guest_count: 3,
     first_name: "Ajay",
@@ -117,19 +118,37 @@ describe(`Use APIs`, function() {
     before(function() {
         User.destroy({
             where: {
-                middle_name: 'Test'
+                first_name: 'Test',
+                last_name: 'Test'
             }
         })
     })
     describe(`Create APIs`, function() {
-        it(`Should create new user/applicant `, function(done) {
+        it(`Should create new user/applicant`, function(done) {
             delete modelData['guest_count']
             modelData.middle_name = 'Test'
+            modelData.first_name = 'Test'
+            modelData.last_name = 'Test'
             chai.request(server)
             .post('/api/users')
             .send(modelData)
             .end((error, response) => {
                 expect(response.status).to.be.equal(201)
+                testUserID = response.body.id
+                done();
+            })
+        })
+        it(`Should create new user/applicant without middle_name`, function(done) {
+            delete modelData['guest_count']
+            delete modelData['middle_name']
+            modelData.first_name = 'Test'
+            modelData.last_name = 'Test'
+            chai.request(server)
+            .post('/api/users')
+            .send(modelData)
+            .end((error, response) => {
+                expect(response.status).to.be.equal(201)
+                testUserID = response.body.id
                 done();
             })
         })
@@ -137,11 +156,47 @@ describe(`Use APIs`, function() {
     describe(`Get APIs`, function() {
         it(`Should fetch user/applicant `, function(done) {
             chai.request(server)
-            .get('/api/users')
+            .get('/api/users/' + testUserID)
             .end((error, response) => {
-                console.log(response.body)
                 expect(response.status).to.be.equal(200)
                 done();
+            })
+        })
+        it(`Should fetch user/applicant with all required keys`, function(done) {
+            chai.request(server)
+            .get('/api/users/' + testUserID)
+            .end((error, response) => {
+                expect(response.status).to.be.equal(200)
+                expect(response.body).to.have.keys('first_name', 'last_name', 'email', 'middle_name', 'education',
+                'address', 'preferred_deductible', 'industry', 'occupation', 'date_of_birth', 'phone_number', 'residence_status',
+                'id', 'createdAt', 'updatedAt')
+                expect(response.body.address).to.have.keys('street', 'unit', 'city', 'state', 'zip_code',
+                'type')
+                done();
+            })
+        })
+    })
+    describe(`Update APIs`, function() {
+        it(`Should fetch and update user/applicant `, (done) => {
+            chai.request(server)
+            .get('/api/users/' + testUserID)
+            .end((error, response) => {
+                expect(response.status).to.be.equal(200)
+                expect(response.body).to.be.a('object')
+                let userData = response.body
+                userData['education'] = 'M.tech'
+                userData['industry'] = 'Teaching'
+                userData['phone_number'] = '9896178650'
+                console.log(userData)
+                chai.request(server)
+                .put('/api/users')
+                .send(userData)
+                .end((updateError, updateResponse) => {
+                    console.log(response.body)
+                    expect(response.status).to.be.equal(200)
+                    expect(response.body.education).to.be.equal('M.tech')
+                    done()
+                })
             })
         })
     })

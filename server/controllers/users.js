@@ -20,6 +20,25 @@ module.exports = {
     },
 
     /**
+     * updateApplicantDetails: It is used to update user/applicant details.
+     * @param {*} req
+     * @param {*} res
+     * @returns
+     */
+     updateApplicantDetails(req, res) {
+         console.log(req.body)
+        return User
+        .update(req.body)
+        .then(user => {
+            res.status(200).send(user)
+        })
+        .catch(error => {
+            console.log(error);
+            res.status(400).send(error)
+        });
+     },
+
+    /**
      * listAllApplicants: It is used to fetch list of all applicants.
      * @param {*} req 
      * @param {*} res 
