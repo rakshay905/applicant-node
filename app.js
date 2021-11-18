@@ -16,9 +16,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 require('./server/routes')(app);
 app.use('/api', require('./server/routes/index'))
 
+app.use(express.static(__dirname + '/build'))
 
-app.get('*', (req, res) => res.status(200).send({
-    message: 'Welcome to the user portal.',
-}));
+
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, `build/index.html`))
+});
 
 module.exports = app;
