@@ -14,7 +14,7 @@ module.exports = {
             res.status(201).send(user)
         })
         .catch(error => {
-            console.log(error);
+            console.error(error);
             res.status(400).send(error)
         });
     },
@@ -25,18 +25,25 @@ module.exports = {
      * @param {*} res
      * @returns
      */
-     updateApplicantDetails(req, res) {
-         console.log(req.body)
+    updateApplicantDetails(req, res) {
         return User
-        .update(req.body)
-        .then(user => {
-            res.status(200).send(user)
+        .findByPk(req.params.id, {
         })
-        .catch(error => {
-            console.log(error);
-            res.status(400).send(error)
-        });
-     },
+        .then(user => {
+            if (!user) {
+                return res.status(404).send({
+                    message: 'Applicant Not Found',
+                });
+            }
+            return user
+            .update(req.body)
+            .then((upUser) => {
+                res.status(200).send(upUser)  // Send back the updated todo.
+            })
+            .catch((error) => res.status(400).send(error));
+        })
+        .catch((error) => res.status(400).send(error));
+    },
 
     /**
      * listAllApplicants: It is used to fetch list of all applicants.

@@ -152,9 +152,24 @@ describe(`Use APIs`, function() {
                 done();
             })
         })
+        it(`Should return true when there is a validation issues in creating new user/applicant`, function(done) {
+            delete modelData['guest_count']
+            delete modelData['middle_name']
+            delete modelData['education']
+            modelData.first_name = 'Test'
+            modelData.last_name = 'Test'
+            chai.request(server)
+            .post('/api/users')
+            .send(modelData)
+            .end((error, response) => {
+                expect(response.status).to.be.equal(400)
+                // testUserID = response.body.id
+                done();
+            })
+        })
     })
     describe(`Get APIs`, function() {
-        it(`Should fetch user/applicant `, function(done) {
+        it(`Should fetch user/applicant by ID`, function(done) {
             chai.request(server)
             .get('/api/users/' + testUserID)
             .end((error, response) => {
@@ -175,6 +190,38 @@ describe(`Use APIs`, function() {
                 done();
             })
         })
+        it(`Should fetch list of users/applicants `, function(done) {
+            chai.request(server)
+            .get('/api/users/')
+            .end((error, response) => {
+                expect(response.status).to.be.equal(200)
+                done();
+            })
+        })
+        it(`Should return true when no user/applicant present `, function(done) {
+            chai.request(server)
+            .get('/api/users/')
+            .end((error, response) => {
+                expect(response.status).to.be.equal(404)
+                done();
+            })
+        })
+        it(`Should return true when there is some issue in fetching all users/applicants `, function(done) {
+            chai.request(server)
+            .get('/api/users/')
+            .end((error, response) => {
+                expect(response.status).to.be.equal(400)
+                done();
+            })
+        })
+        it(`Should return true when user with ID=12 is not present `, function(done) {
+            chai.request(server)
+            .get('/api/users/12')
+            .end((error, response) => {
+                expect(response.status).to.be.equal(404)
+                done();
+            })
+        })
     })
     describe(`Update APIs`, function() {
         it(`Should fetch and update user/applicant `, (done) => {
@@ -187,14 +234,16 @@ describe(`Use APIs`, function() {
                 userData['education'] = 'M.tech'
                 userData['industry'] = 'Teaching'
                 userData['phone_number'] = '9896178650'
-                console.log(userData)
+                userData['middle_name'] = 'update'
+                delete userData['id']
+                delete userData['createdAt']
+                delete userData['updatedAt']
                 chai.request(server)
-                .put('/api/users')
+                .put('/api/users/' + testUserID)
                 .send(userData)
                 .end((updateError, updateResponse) => {
-                    console.log(response.body)
-                    expect(response.status).to.be.equal(200)
-                    expect(response.body.education).to.be.equal('M.tech')
+                    expect(updateResponse.status).to.be.equal(200)
+                    expect(updateResponse.body.education).to.be.equal('M.tech')
                     done()
                 })
             })

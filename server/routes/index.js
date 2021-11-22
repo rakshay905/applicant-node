@@ -7,7 +7,7 @@ module.exports = (app) => {
         message: 'Welcome to the Users API!',
     }));
     app.post('/api/users', middleware(schemas.user, 'body'), usersController.addNewApplicant);
-    app.put('/api/users', middleware(schemas.user, 'body'), usersController.updateApplicantDetails);
+    app.put('/api/users/:id', middleware(schemas.user, 'body'), usersController.updateApplicantDetails);
     app.get('/api/users', usersController.listAllApplicants);
     app.get('/api/users/:Id', usersController.fetchApplicantDetails);
 };
